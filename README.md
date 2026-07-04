@@ -137,4 +137,15 @@ PostgreSQL runs on port **5433** (mapped from Docker) to avoid conflicts with lo
   test, npm run build). See README.md (README.md) for full setup 
   details.
 
+  To run it locally:
+
+  docker compose up -d
+  npm run dev
+
+  Then sign in at http://localhost:3000 with 
+  admin@company.com / password123.
+
+  The dev server from the earlier check was stopped; start it
+   again with npm run dev when you're ready to explore the
+  app.
   
