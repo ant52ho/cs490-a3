@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Resource Allocator
+
+A Next.js resource allocation and workforce planning application with split-screen Gantt/workload planner, time variance tracking, employee recommendations, and capacity management.
+
+## Stack
+
+- Next.js 16 (App Router) + TypeScript
+- PostgreSQL + Prisma
+- NextAuth.js (credentials)
+- Tailwind CSS + shadcn-style components
+- Recharts + gantt-task-react
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+
+- Docker (for PostgreSQL)
+
+### Setup
 
 ```bash
+# Install dependencies
+npm install --legacy-peer-deps
+
+# Start PostgreSQL
+docker compose up -d
+
+# Run migrations and seed
+npm run db:migrate
+npm run db:seed
+
+# Start dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Demo Accounts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Email | Password | Role |
+|---|---|---|
+| admin@company.com | password123 | Admin |
+| manager@company.com | password123 | Manager |
+| alice@company.com | password123 | Employee |
 
-## Learn More
+## Features
 
-To learn more about Next.js, take a look at the following resources:
+- **Dashboard** — KPI metrics, utilization bars, skill gaps, variance alerts
+- **Split-screen Planner** — Gantt timeline + workload heatmap with live sync
+- **Employees** — Profiles, skills, certifications, PTO/training absences
+- **Projects** — Tasks, assignments, shadow placeholder booking, variance reports
+- **Recommendations** — Weighted employee match scores
+- **Calendar** — Company holidays affecting capacity
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run dev          # Development server
+npm run build        # Production build
+npm run test         # Run Vitest unit tests
+npm run db:seed      # Seed demo data
+npm run db:studio    # Prisma Studio
+```
 
-## Deploy on Vercel
+## Environment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Copy `.env` and configure:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/resource_allocator?schema=public
+NEXTAUTH_SECRET=your-secret
+NEXTAUTH_URL=http://localhost:3000
+```
+
+PostgreSQL runs on port **5433** (mapped from Docker) to avoid conflicts with local Postgres.

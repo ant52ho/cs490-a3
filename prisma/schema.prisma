@@ -1,0 +1,240 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+enum Proficiency {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+}
+
+enum ProjectPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AbsenceType {
+  PTO
+  TRAINING
+  OTHER
+}
+
+enum AbsenceStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AlertType {
+  BENCH_RISK
+  BURNOUT
+  RESOURCE_SHORTAGE
+  TRAINING_RECOMMENDATION
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  name          String
+  role          Role      @default(EMPLOYEE)
+  employeeId    String?   @unique
+  employee      Employee? @relation(fields: [employeeId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Department {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  employees Employee[]
+  createdAt DateTime   @default(now())
+}
+
+model Employee {
+  id                   String           @id @default(cuid())
+  name                 String
+  email                String           @unique
+  departmentId         String
+  department           Department       @relation(fields: [departmentId], references: [id])
+  weeklyCapacityHours  Float            @default(40)
+  skills               EmployeeSkill[]
+  certifications       Certification[]
+  assignments          Assignment[]
+  absences             Absence[]
+  timesheetEntries     TimesheetEntry[]
+  user                 User?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+}
+
+model Skill {
+  id                  String                    @id @default(cuid())
+  name                String                    @unique
+  employeeSkills      EmployeeSkill[]
+  projectRequirements ProjectSkillRequirement[]
+  createdAt           DateTime                  @default(now())
+}
+
+model EmployeeSkill {
+  id          String      @id @default(cuid())
+  employeeId  String
+  employee    Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  skillId     String
+  skill       Skill       @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  proficiency Proficiency @default(INTERMEDIATE)
+
+  @@unique([employeeId, skillId])
+}
+
+model Certification {
+  id         String   @id @default(cuid())
+  name       String
+  issuer     String?
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  issuedAt   DateTime?
+  expiresAt  DateTime?
+  createdAt  DateTime @default(now())
+}
+
+model Project {
+  id              String                    @id @default(cuid())
+  name            String
+  description     String?
+  estimatedHours  Float
+  deadline        DateTime
+  priority        ProjectPriority           @default(MEDIUM)
+  status          ProjectStatus             @default(ACTIVE)
+  skillRequirements ProjectSkillRequirement[]
+  tasks           Task[]
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+}
+
+model ProjectSkillRequirement {
+  id              String      @id @default(cuid())
+  projectId       String
+  project         Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  skillId         String
+  skill           Skill       @relation(fields: [skillId], references: [id])
+  minProficiency  Proficiency @default(INTERMEDIATE)
+
+  @@unique([projectId, skillId])
+}
+
+model Task {
+  id              String           @id @default(cuid())
+  name            String
+  projectId       String
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  startDate       DateTime
+  endDate         DateTime
+  estimatedHours  Float
+  priority        ProjectPriority  @default(MEDIUM)
+  assignments     Assignment[]
+  timesheetEntries TimesheetEntry[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model PlaceholderRole {
+  id          String       @id @default(cuid())
+  title       String       @unique
+  description String?
+  assignments Assignment[]
+  createdAt   DateTime     @default(now())
+}
+
+model Assignment {
+  id                  String           @id @default(cuid())
+  taskId              String
+  task                Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  employeeId          String?
+  employee            Employee?        @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  placeholderRoleId   String?
+  placeholderRole     PlaceholderRole? @relation(fields: [placeholderRoleId], references: [id], onDelete: SetNull)
+  startDate           DateTime
+  endDate             DateTime
+  plannedHoursPerWeek Float
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+}
+
+model Absence {
+  id         String        @id @default(cuid())
+  employeeId String
+  employee   Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  type       AbsenceType
+  status     AbsenceStatus @default(APPROVED)
+  startDate  DateTime
+  endDate    DateTime
+  hours      Float
+  notes      String?
+  createdAt  DateTime      @default(now())
+}
+
+model CompanyCalendar {
+  id        String          @id @default(cuid())
+  name      String          @default("Default")
+  events    CalendarEvent[]
+  createdAt DateTime        @default(now())
+}
+
+model CalendarEvent {
+  id         String          @id @default(cuid())
+  calendarId String
+  calendar   CompanyCalendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+  name       String
+  date       DateTime
+  hours      Float           @default(8)
+  createdAt  DateTime        @default(now())
+}
+
+model TimesheetEntry {
+  id           String   @id @default(cuid())
+  employeeId   String
+  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  taskId       String
+  task         Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  weekStartDate DateTime
+  hours        Float
+  createdAt    DateTime @default(now())
+
+  @@index([taskId])
+  @@index([employeeId, weekStartDate])
+}
+
+model Alert {
+  id          String    @id @default(cuid())
+  type        AlertType
+  title       String
+  message     String
+  employeeId  String?
+  projectId   String?
+  skillId     String?
+  severity    String    @default("warning")
+  dismissed   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+}
