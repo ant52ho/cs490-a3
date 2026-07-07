@@ -6,6 +6,8 @@ import {
   addCertification,
   assignSkill,
   createAbsence,
+  deactivateEmployee,
+  reactivateEmployee,
   updateEmployee,
 } from "@/lib/actions";
 import { UtilizationBadge } from "@/components/dashboard/metric-card";
@@ -31,6 +33,7 @@ type Employee = {
   id: string;
   name: string;
   email: string;
+  isActive: boolean;
   weeklyCapacityHours: number;
   department: { id: string; name: string };
   skills: { skillId: string; proficiency: string; skill: { name: string } }[];
@@ -116,20 +119,75 @@ export function EmployeeDetail({
     router.refresh();
   }
 
+  async function handleDeactivate() {
+    if (
+      !confirm(
+        `Deactivate ${employee.name}?\n\nTheir current and future assignments will be converted to replacement placeholders, and reassignment alerts will be created on the dashboard.`
+      )
+    ) {
+      return;
+    }
+
+    const result = await deactivateEmployee(employee.id, true);
+    if (result.success) {
+      setMessage(
+        `Employee deactivated${result.data?.convertedCount ? ` — ${result.data.convertedCount} assignment(s) need reassignment` : ""}`
+      );
+    } else {
+      setMessage(result.error ?? "Failed to deactivate");
+    }
+    router.refresh();
+  }
+
+  async function handleReactivate() {
+    const result = await reactivateEmployee(employee.id);
+    setMessage(result.success ? "Employee reactivated" : result.error ?? "Error");
+    router.refresh();
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{employee.name}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold">{employee.name}</h1>
+            {!employee.isActive && (
+              <Badge variant="red">Inactive</Badge>
+            )}
+          </div>
           <p className="text-neutral-500">{employee.department.name}</p>
         </div>
-        {utilization && (
-          <UtilizationBadge
-            utilizationPct={utilization.utilizationPct}
-            status={utilization.status}
-          />
-        )}
+        <div className="flex items-center gap-3">
+          {utilization && employee.isActive && (
+            <UtilizationBadge
+              utilizationPct={utilization.utilizationPct}
+              status={utilization.status}
+            />
+          )}
+          {employee.isActive ? (
+            <Button variant="destructive" size="sm" onClick={handleDeactivate}>
+              Deactivate
+            </Button>
+          ) : (
+            <Button size="sm" onClick={handleReactivate}>
+              Reactivate
+            </Button>
+          )}
+        </div>
       </div>
+
+      {message && (
+        <p className="rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-2 text-sm">
+          {message}
+        </p>
+      )}
+
+      {!employee.isActive && (
+        <p className="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
+          This employee is inactive — excluded from capacity planning and recommendations.
+          Past assignments remain visible for reference.
+        </p>
+      )}
 
       <Tabs
         tabs={[

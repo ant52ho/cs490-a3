@@ -2,7 +2,7 @@ import { VarianceTable } from "@/components/projects/variance-table";
 import { ProjectDetail } from "@/components/projects/project-detail";
 import { notFound } from "next/navigation";
 import {
-  getEmployeesFull,
+  getActiveEmployees,
   getPlaceholderRoles,
   getProjectVariance,
   getProjectsWithTasks,
@@ -16,7 +16,7 @@ export default async function ProjectDetailPage({
   const { id } = await params;
   const [projects, employees, placeholders, variance] = await Promise.all([
     getProjectsWithTasks(),
-    getEmployeesFull(),
+    getActiveEmployees(),
     getPlaceholderRoles(),
     getProjectVariance(id),
   ]);
@@ -28,7 +28,7 @@ export default async function ProjectDetailPage({
     <div className="space-y-6">
       <ProjectDetail
         project={project}
-        employees={employees.map((e) => ({ id: e.id, name: e.name }))}
+        employees={employees}
         placeholders={placeholders}
       />
       {variance && <VarianceTable variance={variance} />}

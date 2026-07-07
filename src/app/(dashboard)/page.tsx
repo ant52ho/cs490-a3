@@ -209,9 +209,18 @@ export default async function DashboardPage() {
             <CardTitle>Alerts & Recommendations</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
+            {alerts.stored.slice(0, 6).map((alert) => (
+              <div
+                key={alert.id}
+                className="rounded-lg border border-yellow-200 bg-yellow-50 p-3"
+              >
+                <p className="font-medium">{alert.title}</p>
+                <p className="text-sm text-neutral-600">{alert.message}</p>
+              </div>
+            ))}
             {alerts.generated.slice(0, 6).map((alert, i) => (
               <div
-                key={i}
+                key={`gen-${i}`}
                 className="rounded-lg border border-neutral-200 p-3"
               >
                 <p className="font-medium">{alert.title}</p>

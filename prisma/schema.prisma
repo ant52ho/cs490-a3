@@ -51,6 +51,7 @@ enum AlertType {
   BURNOUT
   RESOURCE_SHORTAGE
   TRAINING_RECOMMENDATION
+  REASSIGNMENT_NEEDED
 }
 
 model User {
@@ -79,6 +80,7 @@ model Employee {
   departmentId         String
   department           Department       @relation(fields: [departmentId], references: [id])
   weeklyCapacityHours  Float            @default(40)
+  isActive             Boolean          @default(true)
   skills               EmployeeSkill[]
   certifications       Certification[]
   assignments          Assignment[]

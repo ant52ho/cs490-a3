@@ -8,6 +8,7 @@ import {
   assignPlaceholder,
   assignTask,
   createTask,
+  removeAssignment,
 } from "@/lib/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -104,6 +105,12 @@ export function ProjectDetail({
       });
     }
     setAssigningTask(null);
+    router.refresh();
+  }
+
+  async function handleRemoveAssignment(assignmentId: string, name: string) {
+    if (!confirm(`Remove ${name} from this task?`)) return;
+    await removeAssignment(assignmentId);
     router.refresh();
   }
 
@@ -218,13 +225,33 @@ export function ProjectDetail({
                           <span className="text-neutral-400">Unassigned</span>
                         ) : (
                           task.assignments.map((a) => (
-                            <div key={a.id} className="text-sm">
-                              {a.employee?.name ?? (
-                                <span className="italic text-neutral-500">
-                                  {a.placeholderRole?.title}
-                                </span>
-                              )}{" "}
-                              ({a.plannedHoursPerWeek}h/wk)
+                            <div
+                              key={a.id}
+                              className="flex items-center justify-between gap-2 text-sm"
+                            >
+                              <span>
+                                {a.employee?.name ?? (
+                                  <span className="italic text-neutral-500">
+                                    {a.placeholderRole?.title}
+                                  </span>
+                                )}{" "}
+                                ({a.plannedHoursPerWeek}h/wk)
+                              </span>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 px-2 text-xs text-red-600 hover:text-red-700"
+                                onClick={() =>
+                                  handleRemoveAssignment(
+                                    a.id,
+                                    a.employee?.name ??
+                                      a.placeholderRole?.title ??
+                                      "assignment"
+                                  )
+                                }
+                              >
+                                Remove
+                              </Button>
                             </div>
                           ))
                         )}

@@ -40,6 +40,7 @@ async function main() {
   const skills = await Promise.all(
     [
       "React",
+      "Sleeping",
       "TypeScript",
       "Node.js",
       "PostgreSQL",
@@ -79,11 +80,12 @@ async function main() {
 
   const employeesData = [
     {
-      name: "Alice Chen",
-      email: "alice@company.com",
+      name: "Anthony Ho",
+      email: "anthony@company.com",
       departmentId: engineering.id,
       skills: [
         { skill: "React", proficiency: Proficiency.EXPERT },
+        { skill: "Sleeping", proficiency: Proficiency.EXPERT },
         { skill: "TypeScript", proficiency: Proficiency.EXPERT },
       ],
     },

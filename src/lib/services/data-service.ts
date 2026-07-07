@@ -24,8 +24,9 @@ async function getHolidays() {
   return events.map((e) => ({ date: e.date, hours: e.hours }));
 }
 
-async function getEmployeesForEngine() {
+async function getEmployeesForEngine(activeOnly = true) {
   const employees = await prisma.employee.findMany({
+    where: activeOnly ? { isActive: true } : undefined,
     include: {
       department: true,
       skills: true,
@@ -38,7 +39,8 @@ async function getEmployeesForEngine() {
     id: e.id,
     name: e.name,
     departmentName: e.department.name,
-    weeklyCapacityHours: e.weeklyCapacityHours,
+    weeklyCapacityHours: e.isActive ? e.weeklyCapacityHours : 0,
+    isActive: e.isActive,
     skills: e.skills.map((s) => ({
       skillId: s.skillId,
       proficiency: s.proficiency,
@@ -50,12 +52,22 @@ async function getEmployeesForEngine() {
       status: a.status,
       type: a.type,
     })),
-    assignments: e.assignments.map((a) => ({
-      startDate: a.startDate,
-      endDate: a.endDate,
-      plannedHoursPerWeek: a.plannedHoursPerWeek,
-    })),
+    assignments: e.isActive
+      ? e.assignments.map((a) => ({
+          startDate: a.startDate,
+          endDate: a.endDate,
+          plannedHoursPerWeek: a.plannedHoursPerWeek,
+        }))
+      : [],
   }));
+}
+
+export async function getActiveEmployees() {
+  return prisma.employee.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
 }
 
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {

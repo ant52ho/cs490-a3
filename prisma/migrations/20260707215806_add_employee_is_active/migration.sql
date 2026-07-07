@@ -1,0 +1,5 @@
+-- AlterEnum
+ALTER TYPE "AlertType" ADD VALUE 'REASSIGNMENT_NEEDED';
+
+-- AlterTable
+ALTER TABLE "Employee" ADD COLUMN     "isActive" BOOLEAN NOT NULL DEFAULT true;

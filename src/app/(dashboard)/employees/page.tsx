@@ -3,6 +3,7 @@ import { UtilizationBadge } from "@/components/dashboard/metric-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
+  Badge,
   Table,
   TableBody,
   TableCell,
@@ -44,6 +45,7 @@ export default async function EmployeesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Department</TableHead>
                 <TableHead>Skills</TableHead>
                 <TableHead>Capacity</TableHead>
@@ -55,8 +57,18 @@ export default async function EmployeesPage() {
               {employees.map((emp) => {
                 const util = utilMap.get(emp.id);
                 return (
-                  <TableRow key={emp.id}>
+                  <TableRow
+                    key={emp.id}
+                    className={!emp.isActive ? "opacity-60" : undefined}
+                  >
                     <TableCell className="font-medium">{emp.name}</TableCell>
+                    <TableCell>
+                      {emp.isActive ? (
+                        <Badge variant="green">Active</Badge>
+                      ) : (
+                        <Badge variant="outline">Inactive</Badge>
+                      )}
+                    </TableCell>
                     <TableCell>{emp.department.name}</TableCell>
                     <TableCell>
                       {emp.skills.slice(0, 3).map((s) => s.skill.name).join(", ")}
@@ -64,11 +76,13 @@ export default async function EmployeesPage() {
                     </TableCell>
                     <TableCell>{emp.weeklyCapacityHours}h/wk</TableCell>
                     <TableCell>
-                      {util && (
+                      {emp.isActive && util ? (
                         <UtilizationBadge
                           utilizationPct={util.utilizationPct}
                           status={util.status}
                         />
+                      ) : (
+                        <span className="text-neutral-400">—</span>
                       )}
                     </TableCell>
                     <TableCell>

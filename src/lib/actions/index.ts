@@ -206,6 +206,13 @@ export async function assignTask(data: {
   await requireRole(["ADMIN", "MANAGER"]);
 
   try {
+    const employee = await prisma.employee.findUnique({
+      where: { id: data.employeeId },
+    });
+    if (!employee?.isActive) {
+      return { success: false, error: "Cannot assign inactive employee" };
+    }
+
     await prisma.assignment.create({
       data: {
         taskId: data.taskId,
@@ -316,6 +323,130 @@ export async function deleteCalendarEvent(id: string): Promise<ActionResult> {
     return { success: true };
   } catch {
     return { success: false, error: "Failed to delete calendar event" };
+  }
+}
+
+export async function removeAssignment(assignmentId: string): Promise<ActionResult> {
+  await requireRole(["ADMIN", "MANAGER"]);
+
+  try {
+    const assignment = await prisma.assignment.findUnique({
+      where: { id: assignmentId },
+      include: { task: true },
+    });
+    if (!assignment) {
+      return { success: false, error: "Assignment not found" };
+    }
+
+    await prisma.assignment.delete({ where: { id: assignmentId } });
+    revalidatePath(`/projects/${assignment.task.projectId}`);
+    revalidateAll();
+    return { success: true };
+  } catch {
+    return { success: false, error: "Failed to remove assignment" };
+  }
+}
+
+export async function deactivateEmployee(
+  employeeId: string,
+  convertToPlaceholder = true
+): Promise<ActionResult<{ convertedCount: number }>> {
+  await requireRole(["ADMIN", "MANAGER"]);
+
+  try {
+    const employee = await prisma.employee.findUnique({
+      where: { id: employeeId },
+      include: {
+        assignments: {
+          where: { endDate: { gte: new Date() } },
+          include: {
+            task: { include: { project: true } },
+          },
+        },
+      },
+    });
+
+    if (!employee) {
+      return { success: false, error: "Employee not found" };
+    }
+    if (!employee.isActive) {
+      return { success: false, error: "Employee is already inactive" };
+    }
+
+    let convertedCount = 0;
+
+    await prisma.$transaction(async (tx) => {
+      if (convertToPlaceholder) {
+        for (const assignment of employee.assignments) {
+          const placeholderTitle = `Replacement: ${employee.name} (${assignment.task.project.name})`;
+          let placeholder = await tx.placeholderRole.findFirst({
+            where: { title: placeholderTitle },
+          });
+          if (!placeholder) {
+            placeholder = await tx.placeholderRole.create({
+              data: {
+                title: placeholderTitle,
+                description: `Backfill for ${employee.name} on ${assignment.task.name}`,
+              },
+            });
+          }
+
+          await tx.assignment.update({
+            where: { id: assignment.id },
+            data: {
+              employeeId: null,
+              placeholderRoleId: placeholder.id,
+            },
+          });
+
+          await tx.alert.create({
+            data: {
+              type: "REASSIGNMENT_NEEDED",
+              title: "Reassignment needed",
+              message: `${employee.name} is no longer available — "${assignment.task.name}" on ${assignment.task.project.name} needs a replacement (${assignment.plannedHoursPerWeek}h/wk)`,
+              projectId: assignment.task.projectId,
+              severity: "warning",
+            },
+          });
+
+          convertedCount += 1;
+        }
+      } else {
+        await tx.assignment.deleteMany({
+          where: {
+            employeeId,
+            endDate: { gte: new Date() },
+          },
+        });
+      }
+
+      await tx.employee.update({
+        where: { id: employeeId },
+        data: { isActive: false },
+      });
+    });
+
+    revalidatePath(`/employees/${employeeId}`);
+    revalidateAll();
+    return { success: true, data: { convertedCount } };
+  } catch {
+    return { success: false, error: "Failed to deactivate employee" };
+  }
+}
+
+export async function reactivateEmployee(employeeId: string): Promise<ActionResult> {
+  await requireRole(["ADMIN", "MANAGER"]);
+
+  try {
+    await prisma.employee.update({
+      where: { id: employeeId },
+      data: { isActive: true },
+    });
+    revalidatePath(`/employees/${employeeId}`);
+    revalidateAll();
+    return { success: true };
+  } catch {
+    return { success: false, error: "Failed to reactivate employee" };
   }
 }
 
