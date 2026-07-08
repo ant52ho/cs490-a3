@@ -1,6 +1,6 @@
-# Resource Allocator
+# Daywise
 
-A Next.js resource allocation and workforce planning application with split-screen Gantt/workload planner, time variance tracking, employee recommendations, and capacity management.
+A Next.js workforce planning application with split-screen Gantt/workload planner, time variance tracking, employee recommendations, and capacity management.
 
 ## Stack
 
@@ -74,78 +74,3 @@ NEXTAUTH_URL=http://localhost:3000
 ```
 
 PostgreSQL runs on port **5433** (mapped from Docker) to avoid conflicts with local Postgres.
-
-
-## Additional info
- What's included
-
-  Foundation
-
-  • Next.js 16 App Router + TypeScript + Tailwind
-  • PostgreSQL via Docker (docker-compose.yml, port 5433)
-  • Prisma schema with all entities (employees, projects,
-    tasks, assignments, placeholders, absences, calendar,
-    timesheets, alerts)
-  • NextAuth credentials auth with roles (ADMIN, MANAGER,
-    EMPLOYEE)
-  • Seed data: 10 employees, 5 projects, tasks, assignments,
-    mock timesheets (70–130% of planned), PTO/holidays
-
-  Domain engines (src/lib/engines/)
-
-  • Capacity, Workload, Variance, Matching, Skill Gap, Advanced
-    (bench risk, burnout, forecasting)
-  • 9 Vitest unit tests — all passing
-
-  Pages
-
-  ┌────────────┬────────────────────────────────────────────────┐
-  │ Route      │ Feature                                        │
-  ├────────────┼────────────────────────────────────────────────┤
-  │ /          │ Dashboard with all KPI metrics, utilization    │
-  │            │ bars, skill gaps, variance alerts              │
-  │ /planner   │ Split-screen Gantt + workload heatmap (drag    │
-  │            │ tasks → capacity updates)                      │
-  │ /employees │ List + detail (skills, certs, assignments,     │
-  │            │ PTO/training)                                  │
-  │ /projects  │ CRUD, tasks, employee/placeholder assignments, │
-  │            │ variance report                                │
-  │ /recommend │ Weighted match scores with                     │
-  │ ations     │ skill/availability/workload breakdown          │
-  │ /settings/ │ Company holiday management                     │
-  │ calendar   │                                                │
-  │ /login     │ Auth                                           │
-  └────────────┴────────────────────────────────────────────────┘
-
-  Demo login
-
-  • admin@company.com / password123 (Admin)
-  • manager@company.com / password123 (Manager)
-  • alice@company.com / password123 (Employee)
-
-  Run it
-
-  docker compose up -d
-  npm install --legacy-peer-deps
-  npm run db:migrate
-  npm run db:seed
-  npm run dev
-
-  Then open http://localhost:3000
-
-  The dev server is already running. Build and tests pass (npm 
-  test, npm run build). See README.md (README.md) for full setup 
-  details.
-
-  To run it locally:
-
-  docker compose up -d
-  npm run dev
-
-  Then sign in at http://localhost:3000 with 
-  admin@company.com / password123.
-
-  The dev server from the earlier check was stopped; start it
-   again with npm run dev when you're ready to explore the
-  app.
-  

@@ -29,7 +29,7 @@ export function Sidebar({ userName }: { userName?: string | null }) {
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-neutral-200 bg-white">
       <div className="border-b border-neutral-200 p-6">
-        <h1 className="text-lg font-bold">Resource Allocator</h1>
+        <h1 className="text-lg font-bold">Daywise</h1>
         {userName && <p className="text-sm text-neutral-500">{userName}</p>}
       </div>
       <nav className="flex-1 space-y-1 p-4">

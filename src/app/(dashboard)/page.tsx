@@ -43,7 +43,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Resource Allocation Dashboard</h1>
+        <h1 className="text-2xl font-bold">Dashboard</h1>
         <p className="text-neutral-500">
           Monitor team capacity, utilization, and skill gaps
         </p>

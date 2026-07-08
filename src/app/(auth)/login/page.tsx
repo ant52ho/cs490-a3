@@ -33,7 +33,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-neutral-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Resource Allocator</CardTitle>
+          <CardTitle>Daywise</CardTitle>
           <CardDescription>
             Sign in to manage projects and workforce capacity
           </CardDescription>

@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Resource Allocator",
-  description: "Resource allocation and workforce planning",
+  title: "Daywise",
+  description: "Workforce planning and resource allocation",
 };
 
 export default function RootLayout({
